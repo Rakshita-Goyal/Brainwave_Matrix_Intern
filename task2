@@ -1,0 +1,179 @@
+#include <iostream>
+#include <unordered_map>
+#include <string>
+
+class Account {
+private:
+    std::string accountNumber;
+    std::string accountHolderName;
+    double balance;
+
+public:
+    Account(const std::string& accNum, const std::string& name, double initialBalance)
+        : accountNumber(accNum), accountHolderName(name), balance(initialBalance) {}
+
+    Account() : balance(0.0) {} // Default constructor
+
+    std::string getAccountNumber() const {
+        return accountNumber;
+    }
+
+    std::string getAccountHolderName() const {
+        return accountHolderName;
+    }
+
+    double getBalance() const {
+        return balance;
+    }
+
+    void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+            std::cout << "Deposited: $" << amount << ". New Balance: $" << balance << std::endl;
+        } else {
+            std::cout << "Invalid deposit amount." << std::endl;
+        }
+    }
+
+    void withdraw(double amount) {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount;
+            std::cout << "Withdrew: $" << amount << ". New Balance: $" << balance << std::endl;
+        } else {
+            std::cout << "Invalid withdraw amount." << std::endl;
+        }
+    }
+
+    void displayAccountDetails() const {
+        std::cout << "Account Number: " << accountNumber << std::endl;
+        std::cout << "Account Holder: " << accountHolderName << std::endl;
+        std::cout << "Balance: $" << balance << std::endl;
+    }
+};
+
+class Bank {
+private:
+    std::unordered_map<std::string, Account> accounts;
+
+public:
+    void createAccount(const std::string& accNum, const std::string& name, double initialBalance) {
+        if (accounts.find(accNum) == accounts.end()) {
+            accounts.emplace(accNum, Account(accNum, name, initialBalance));
+            std::cout << "Account created successfully." << std::endl;
+        } else {
+            std::cout << "Account with this number already exists." << std::endl;
+        }
+    }
+
+    void deposit(const std::string& accNum, double amount) {
+        if (accounts.find(accNum) != accounts.end()) {
+            accounts[accNum].deposit(amount);
+        } else {
+            std::cout << "Account not found." << std::endl;
+        }
+    }
+
+    void withdraw(const std::string& accNum, double amount) {
+        if (accounts.find(accNum) != accounts.end()) {
+            accounts[accNum].withdraw(amount);
+        } else {
+            std::cout << "Account not found." << std::endl;
+        }
+    }
+
+    void transfer(const std::string& fromAccNum, const std::string& toAccNum, double amount) {
+        if (accounts.find(fromAccNum) != accounts.end() && accounts.find(toAccNum) != accounts.end()) {
+            if (accounts[fromAccNum].getBalance() >= amount) {
+                accounts[fromAccNum].withdraw(amount);
+                accounts[toAccNum].deposit(amount);
+                std::cout << "Transferred: $" << amount << " from " << fromAccNum << " to " << toAccNum << std::endl;
+            } else {
+                std::cout << "Insufficient balance." << std::endl;
+            }
+        } else {
+            std::cout << "One or both accounts not found." << std::endl;
+        }
+    }
+
+    void displayAccountDetails(const std::string& accNum) const {
+        auto it = accounts.find(accNum);
+        if (it != accounts.end()) {
+            it->second.displayAccountDetails();
+        } else {
+            std::cout << "Account not found." << std::endl;
+        }
+    }
+};
+
+int main() {
+    Bank bank;
+    int choice;
+    std::string accNum, name, fromAccNum, toAccNum;
+    double amount;
+
+    while (true) {
+        std::cout << "\n--- Online Banking System ---\n";
+        std::cout << "1. Create Account\n";
+        std::cout << "2. Deposit\n";
+        std::cout << "3. Withdraw\n";
+        std::cout << "4. Transfer\n";
+        std::cout << "5. Display Account Details\n";
+        std::cout << "6. Exit\n";
+        std::cout << "Enter your choice: ";
+        std::cin >> choice;
+
+        switch (choice) {
+        case 1:
+            std::cout << "Enter Account Number: ";
+            std::cin >> accNum;
+            std::cout << "Enter Account Holder Name: ";
+            std::cin.ignore();
+            std::getline(std::cin, name);
+            std::cout << "Enter Initial Balance: ";
+            std::cin >> amount;
+            bank.createAccount(accNum, name, amount);
+            break;
+
+        case 2:
+            std::cout << "Enter Account Number: ";
+            std::cin >> accNum;
+            std::cout << "Enter Amount to Deposit: ";
+            std::cin >> amount;
+            bank.deposit(accNum, amount);
+            break;
+
+        case 3:
+            std::cout << "Enter Account Number: ";
+            std::cin >> accNum;
+            std::cout << "Enter Amount to Withdraw: ";
+            std::cin >> amount;
+            bank.withdraw(accNum, amount);
+            break;
+
+        case 4:
+            std::cout << "Enter From Account Number: ";
+            std::cin >> fromAccNum;
+            std::cout << "Enter To Account Number: ";
+            std::cin >> toAccNum;
+            std::cout << "Enter Amount to Transfer: ";
+            std::cin >> amount;
+            bank.transfer(fromAccNum, toAccNum, amount);
+            break;
+
+        case 5:
+            std::cout << "Enter Account Number: ";
+            std::cin >> accNum;
+            bank.displayAccountDetails(accNum);
+            break;
+
+        case 6:
+            std::cout << "Exiting the system." << std::endl;
+            return 0;
+
+        default:
+            std::cout << "Invalid choice. Please try again." << std::endl;
+        }
+    }
+
+    return 0;
+}
